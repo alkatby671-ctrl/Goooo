@@ -185,20 +185,3 @@ function spin(){
  const prize=[0,cost,2*cost,5*cost,10*cost][Math.floor(Math.random()*5)];
  coins+=prize;$('wheelResult').textContent='ربحت '+prize+' عملة';
 }
-async function claim(amount){coins+=amount;toast('تم استلام '+amount+' عملة')}
-const SQL=`create table if not exists videos(id uuid primary key default gen_random_uuid(),title text,url text not null,created_at timestamptz default now());
-create table if not exists gifts(id uuid primary key default gen_random_uuid(),name text not null,emoji text default '🎁',price bigint not null default 1,color text default '#ffcc33',level int default 1,created_at timestamptz default now());
-create table if not exists gift_orders(id uuid primary key default gen_random_uuid(),gift_id uuid references gifts(id),sender text,coins_spent bigint,created_at timestamptz default now());
-alter table videos enable row level security;alter table gifts enable row level security;alter table gift_orders enable row level security;
-create policy "public read videos" on videos for select using(true);
-create policy "public read gifts" on gifts for select using(true);
-create policy "public insert gift orders" on gift_orders for insert with check(true);
-create policy "public insert videos" on videos for insert with check(true);
-create policy "public insert gifts" on gifts for insert with check(true);`;
-function showSql(){$('sqlBox').classList.remove('hidden');$('sql').textContent=SQL}
-function copySql(){navigator.clipboard.writeText(SQL);toast('تم نسخ SQL')}
-$('url').value=localStorage.getItem('atrak_url')||'';$('key').value=localStorage.getItem('atrak_key')||'';
-if($('url').value&&$('key').value)connect();
-</script>
-</body>
-</html>
