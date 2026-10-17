@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اترك أثر — حزمة الترقية الكاملة</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue:#2f7bff;--red:#ff2d55;--gold:#ffcc33;--bg:#07080d;--card:#12141d;--line:#232738}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,'Segoe UI',Tahoma,sans-serif}
+body{background:radial-gradient(1000px 600px at 80% -10%,#12224a,transparent),var(--bg);color:#fff;min-height:100vh;padding-bottom:90px}
+header{position:sticky;top:0;z-index:20;background:rgba(7,8,13,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--red));display:grid;place-items:center;font-weight:900}
+h1{font-size:18px}.sub{font-size:11px;color:#9aa3b8}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(10,11,17,.96);border-top:1px solid var(--line);z-index:30}
+nav button{flex:1;background:none;border:0;color:#8b93a7;padding:12px 4px;font-size:11px;display:grid;gap:4px;justify-items:center}
+nav button.active{color:#fff}.nav-ico{font-size:20px}
+main{padding:16px;max-width:520px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.btn{width:100%;border:0;border-radius:14px;padding:14px;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(135deg,var(--blue),#1b4fd8);cursor:pointer}
+.btn.red{background:linear-gradient(135deg,var(--red),#c2185b)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),#ff9800);color:#201400}
+.btn.ghost{background:#1b1f2c;border:1px solid var(--line)}
+input,textarea,select{width:100%;background:#0c0e15;border:1px solid var(--line);color:#fff;border-radius:12px;padding:12px;margin:7px 0;font-size:14px}
+label{font-size:12px;color:#9aa3b8}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gift{background:#0d1018;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;cursor:pointer}
+.gift img,.gift .emo{font-size:30px}
+.price{color:var(--gold);font-weight:800;font-size:12px}
+.video{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:9/16;margin-bottom:14px}
+.video video{width:100%;height:100%;object-fit:cover}
+.vmeta{position:absolute;bottom:12px;right:12px;left:12px;text-shadow:0 2px 8px #000}
+.badge{background:var(--blue);border-radius:99px;padding:2px 8px;font-size:10px}
+.hidden{display:none!important}
+#giftPanel{position:fixed;inset:auto 0 0 0;background:#0b0d14;border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:16px;transform:translateY(105%);transition:.28s;z-index:50;max-height:72vh;overflow:auto}
+#giftPanel.open{transform:translateY(0)}
+#giftFx{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:radial-gradient(circle,rgba(0,0,0,.25),rgba(0,0,0,.75))}
+#giftFx.show{display:grid}
+#giftFx .big{font-size:120px;animation:pop .8s ease}
+@keyframes pop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-6px,4px)}50%{transform:translate(6px,-4px)}75%{transform:translate(-4px,-6px)}}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#151a26;border:1px solid var(--line);padding:10px 16px;border-radius:99px;z-index:99}
+pre{white-space:pre-wrap;background:#05060a;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:10px;max-height:220px;overflow:auto}
+</style>
+</head>
+<body>
+<header><div class="logo">أ</div><div><h1>اترك أثر</h1><div class="sub">حزمة الترقية الكاملة — فيديوهات • لايف • هدايا • ألعاب • لوحة تحكم</div></div></header>
+
+<main>
+<div class="card">
+  <label>رابط مشروع Supabase</label><input id="url" placeholder="https://xxxx.supabase.co">
+  <label>مفتاح anon العام</label><input id="key" placeholder="eyJ...">
+  <button class="btn" onclick="connect()">ربط وتشغيل المنصة</button>
+  <button class="btn ghost" onclick="showSql()">عرض / نسخ SQL الجداول</button>
+  <div id="sqlBox" class="hidden"><pre id="sql"></pre><button class="btn ghost" onclick="copySql()">نسخ SQL</button></div>
+</div>
+
+<section id="videos" class="hidden"></section>
+
+<section id="live" class="hidden">
+  <div class="video" id="liveStage">
+    <video id="liveVideo" autoplay muted loop playsinline></video>
+    <div class="vmeta"><span class="badge">بث مباشر</span> <b>MRJOOpro</b> ✔</div>
+  </div>
+  <button class="btn gold" onclick="openGifts()">🎁 إرسال هدية</button>
+</section>
+
+<section id="games" class="hidden">
+  <div class="card"><h3>🎡 عجلة الحظ</h3><p class="sub">تكلفة الدوران: 100 عملة</p><input id="wheelCoins" type="number" value="100"><button class="btn gold" onclick="spin()">ادور الآن</button><div id="wheelResult"></div></div>
+  <div class="card"><h3>🏆 تحديات يومية</h3><p>شاهد 5 فيديوهات — 500 عملة</p><button class="btn ghost" onclick="claim(500)">استلام المكافأة</button></div>
+</section>
+
+<section id="admin" class="hidden">
+  <div class="card"><h3>🎬 إضافة فيديو</h3>
+  <input id="vTitle" placeholder="عنوان الفيديو"><input id="vUrl" placeholder="رابط MP4">
+  <button class="btn" onclick="addVideo()">حفظ ونشر</button></div>
+  <div class="card"><h3>🎁 إضافة هدية</h3>
+  <input id="gName" placeholder="اسم الهدية"><input id="gPrice" type="number" placeholder="السعر">
+  <input id="gEmoji" placeholder="إيموجي أو رمز"><input id="gColor" type="color" value="#ffcc33">
+  <button class="btn red" onclick="addGift()">حفظ الهدية</button></div>
+</section>
+</main>
+
+<div id="giftPanel">
+  <b>🎁 هدايا اترك أثر</b>
+  <div class="grid" id="giftGrid" style="margin-top:12px"></div>
+  <button class="btn ghost" style="margin-top:12px" onclick="closeGifts()">إغلاق</button>
+</div>
+<div id="giftFx"><div class="big" id="fxEmoji">🦁</div></div>
+
+<nav>
+<button class="active" onclick="tab('videos',this)"><span class="nav-ico">🏠</span>الرئيسية</button>
+<button onclick="tab('live',this)"><span class="nav-ico">📡</span>لايف</button>
+<button onclick="tab('games',this)"><span class="nav-ico">🎮</span>ألعاب</button>
+<button onclick="tab('admin',this)"><span class="nav-ico">🛠️</span>لوحة التحكم</button>
+</nav>
+
+<script>
+const DEFAULT_GIFTS=[
+['الأسد الملك','🦁',100000,'#ffcc33',3],['كون اترك أثر','🌌',499999,'#2f7bff',3],
+['النمر الأزرق','🐆',50000,'#38bdf8',2],['الفهد السريع','🐈',25000,'#22d3ee',2],
+['الحوت الأزرق','🐳',75000,'#3b82f6',2],['الزرافة الذهبية','🦒',30000,'#facc15',2],
+['الحارس','🛡️',40000,'#22c55e',2],['التنين الملتهب','🐉',200000,'#ef4444',3],
+['العنقاء','🔥',150000,'#f97316',3],['قطر الماس','💎',300000,'#a5f3fc',3],
+['الوردة','🌹',10,'#ff2d55',1],['القلب','❤️',5,'#ff2d55',1],
+['التاج','👑',5000,'#facc15',2],['الصاروخ','🚀',10000,'#60a5fa',2],
+['اليخت','🛥️',25000,'#38bdf8',2],['الطائرة','✈️',15000,'#93c5fd',2],
+['الذئب','🐺',20000,'#94a3b8',2],['الصقر','🦅',18000,'#fbbf24',2],
+['القلعة','🏰',80000,'#a78bfa',3],['عرش المجرة','🪐',350000,'#8b5cf6',3]
+];
+let sb=null, gifts=[], coins=2000000;
+const $=id=>document.getElementById(id);
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2500)}
+function tab(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function connect(){
+ const url=$('url').value.trim(),key=$('key').value.trim();
+ if(!url||!key)return toast('أدخل رابط Supabase والمفتاح');
+ localStorage.setItem('atrak_url',url);localStorage.setItem('atrak_key',key);
+ sb=window.supabase.createClient(url,key);
+ init();
+}
+async function init(){
+ ['videos','live','games','admin'].forEach(i=>$(i).classList.remove('hidden'));
+ await ensureSeed(); await loadGifts(); await loadVideos();
+ $('liveVideo').src='https://cdn.pixabay.com/video/2023/10/07/184448-872026626_large.mp4';
+ toast('تم ربط المنصة بنجاح');
+}
+async function ensureSeed(){
+ const {data}=await sb.from('gifts').select('id').limit(1);
+ if(data&&data.length)return;
+ const rows=DEFAULT_GIFTS.map(g=>({name:g[0],emoji:g[1],price:g[2],color:g[3],level:g[4]}));
+ await sb.from('gifts').insert(rows);
+}
+async function loadGifts(){
+ const {data,error}=await sb.from('gifts').select('*').order('price',{ascending:true});
+ if(error)return toast('خطأ في تحميل الهدايا: '+error.message);
+ gifts=data||[];renderGifts();
+}
+function renderGifts(){
+ $('giftGrid').innerHTML=gifts.map(g=>`<div class="gift" onclick="sendGift('${g.id}','${g.emoji||'🎁'}',${g.price},${g.level||1})"><div class="emo">${g.emoji||'🎁'}</div><div>${g.name}</div><div class="price">${g.price}</div></div>`).join('');
+}
+function openGifts(){$('giftPanel').classList.add('open')}
+function closeGifts(){$('giftPanel').classList.remove('open')}
+async function sendGift(id,emoji,price,level){
+ if(coins<price)return toast('رصيدك غير كافٍ');
+ coins-=price;
+ const fx=$('giftFx');$('fxEmoji').textContent=emoji;fx.classList.add('show');
+ document.body.classList.add('shake');
+ if(level>=3)navigator.vibrate&&navigator.vibrate([80,40,80]);
+ setTimeout(()=>{fx.classList.remove('show');document.body.classList.remove('shake')},1600);
+ await sb.from('gift_orders').insert({gift_id:id,coins_spent:price,sender:'MRJOOpro'});
+ toast('تم إرسال الهدية');
+}
+async function loadVideos(){
+ const {data,error}=await sb.from('videos').select('*').order('created_at',{ascending:false}).limit(30);
+ if(error||!data||!data.length){seedVideos();return}
+ $('videos').innerHTML=data.map(v=>`<div class="video"><video src="${v.url}" controls playsinline></video><div class="vmeta"><b>${v.title||'فيديو'}</b></div></div>`).join('');
+}
+async function seedVideos(){
+ const urls=[
+ 'https://cdn.pixabay.com/video/2023/10/07/184448-872026626_large.mp4',
+ 'https://cdn.pixabay.com/video/2022/12/11/142310-780168936_large.mp4',
+ 'https://cdn.pixabay.com/video/2023/03/24/156573-813496293_large.mp4'
+ ];
+ const rows=urls.map((u,i)=>({title:'اترك أثر — فيديو افتتاحي '+(i+1),url:u}));
+ await sb.from('videos').insert(rows);loadVideos();
+}
+async function addVideo(){
+ const title=$('vTitle').value.trim(),url=$('vUrl').value.trim();
+ if(!title||!url)return toast('أكمل البيانات');
+ const {error}=await sb.from('videos').insert({title,url});
+ error?toast(error.message):(toast('تم نشر الفيديو'),loadVideos());
+}
+async function addGift(){
+ const name=$('gName').value.trim(),price=+$('gPrice').value,emoji=$('gEmoji').value.trim()||'🎁',color=$('gColor').value;
+ if(!name||!price)return toast('أكمل البيانات');
+ const {error}=await sb.from('gifts').insert({name,price,emoji,color,level:price>=50000?3:price>=5000?2:1});
+ error?toast(error.message):(toast('تمت إضافة الهدية'),loadGifts());
+}
+function spin(){
+ const cost=+$('wheelCoins').value||100;
+ if(coins<cost)return toast('رصيدك غير كافٍ');
+ coins-=cost;
+ const prize=[0,cost,2*cost,5*cost,10*cost][Math.floor(Math.random()*5)];
+ coins+=prize;$('wheelResult').textContent='ربحت '+prize+' عملة';
+}
+async function claim(amount){coins+=amount;toast('تم استلام '+amount+' عملة')}
+const SQL=`create table if not exists videos(id uuid primary key default gen_random_uuid(),title text,url text not null,created_at timestamptz default now());
+create table if not exists gifts(id uuid primary key default gen_random_uuid(),name text not null,emoji text default '🎁',price bigint not null default 1,color text default '#ffcc33',level int default 1,created_at timestamptz default now());
+create table if not exists gift_orders(id uuid primary key default gen_random_uuid(),gift_id uuid references gifts(id),sender text,coins_spent bigint,created_at timestamptz default now());
+alter table videos enable row level security;alter table gifts enable row level security;alter table gift_orders enable row level security;
+create policy "public read videos" on videos for select using(true);
+create policy "public read gifts" on gifts for select using(true);
+create policy "public insert gift orders" on gift_orders for insert with check(true);
+create policy "public insert videos" on videos for insert with check(true);
+create policy "public insert gifts" on gifts for insert with check(true);`;
+function showSql(){$('sqlBox').classList.remove('hidden');$('sql').textContent=SQL}
+function copySql(){navigator.clipboard.writeText(SQL);toast('تم نسخ SQL')}
+$('url').value=localStorage.getItem('atrak_url')||'';$('key').value=localStorage.getItem('atrak_key')||'';
+if($('url').value&&$('key').value)connect();
+</script>
+</body>
+</html>
